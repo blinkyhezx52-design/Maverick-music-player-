@@ -1,3 +1,4 @@
+{
 "name":"Maverick Music player",
 "short_name":"Maverick",
 "description":"Your music, your vibe.",
@@ -6,3 +7,4 @@
 "display":"standalone",
 "background _color":"#080808",
 "theme_color":"#080808"
+}
