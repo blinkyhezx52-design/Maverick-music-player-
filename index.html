@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="maverick-icon.svg" type="image/svg+xml">
+<title>MAVERICK MUSIC PLAYER</title>
+<style>
+:root{--bg:#080808;--panel:#151515;--accent:#ff1738;--text:#f7f7f7;--muted:#aaa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif}
+header{padding:24px 18px 16px;text-align:center;background:linear-gradient(180deg,#25000a,transparent)}
+h1{margin:0;color:var(--accent);letter-spacing:4px;font-size:26px;text-shadow:0 0 22px color-mix(in srgb,var(--accent),transparent 45%)}header p{margin:6px 0;color:var(--muted);font-size:12px;letter-spacing:2px}
+main{max-width:620px;margin:auto;padding:12px 16px 32px}.card{background:var(--panel);border:1px solid #292929;border-radius:18px;padding:16px;margin:12px 0}
+.cover{width:190px;height:190px;margin:8px auto 16px;border-radius:24px;background:radial-gradient(circle at 50% 40%,var(--accent),#28000a 45%,#090909 75%);display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;box-shadow:0 8px 35px #000}
+#songTitle{font-weight:750;font-size:18px;text-align:center;overflow-wrap:anywhere}#songArtist{text-align:center;color:var(--muted);margin-top:4px}
+input,button,select{font:inherit}button{border:0;border-radius:12px;padding:12px 14px;background:var(--accent);color:white;font-weight:750;cursor:pointer}
+button.secondary{background:#292929;color:var(--text);border:1px solid #3a3a3a}button:active{transform:scale(.98)}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}.controls button{min-width:65px}
+input[type=range]{width:100%;accent-color:var(--accent)}.times{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row button{flex:1}.filebtn{display:block;text-align:center;cursor:pointer;padding:13px;background:#292929;border:1px solid #444;border-radius:12px;font-weight:700}.filebtn input{display:none}
+ul{list-style:none;margin:12px 0 0;padding:0}li{padding:12px 8px;border-bottom:1px solid #303030;display:flex;gap:10px;align-items:center;justify-content:space-between}li span{overflow-wrap:anywhere}
+small,.hint{color:var(--muted);font-size:12px}.sectiontitle{font-size:14px;color:var(--accent);letter-spacing:2px;font-weight:800;margin:0 0 12px}
+textarea{width:100%;min-height:145px;background:#090909;color:var(--text);border:1px solid #444;border-radius:12px;padding:12px;resize:vertical}
+select{width:100%;padding:12px;background:#090909;color:var(--text);border:1px solid #444;border-radius:12px;margin:6px 0 12px}
+#lyricsDisplay{white-space:pre-wrap;line-height:1.7;text-align:center;min-height:70px;color:var(--text)}
+#visualizer{width:100%;height:76px;display:block;border-radius:12px;background:#090909;margin-top:12px}.eqgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.eqitem{text-align:center;font-size:12px;color:var(--muted)}.eqitem input{height:100px;writing-mode:vertical-lr;direction:rtl;width:26px;margin:8px auto;display:block}.pill{display:inline-block;border:1px solid #383838;border-radius:999px;padding:5px 9px;color:var(--muted);font-size:11px;margin:3px}
+footer{text-align:center;color:#777;font-size:11px;padding:10px 20px 26px}
+</style>
+</head>
+<body>
+<header><h1>MAVERICK</h1><p>MUSIC PLAYER · YOUR MUSIC, YOUR VIBE</p></header>
+<main>
+<section class="card">
+  <div class="cover" id="cover">M</div>
+  <div id="songTitle">No song selected</div><div id="songArtist">Choose music from your phone</div>
+  <audio id="audio" preload="metadata"></audio>
+  <div style="margin-top:18px"><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Song progress"><div class="times"><span id="currentTime">0:00</span><span id="duration">0:00</span></div></div>
+  <canvas id="visualizer" aria-label="Music visualizer"></canvas>
+  <div class="controls">
+    <button class="secondary" id="prev">|◀</button><button id="play">▶ PLAY</button><button class="secondary" id="next">▶|</button>
+    <button class="secondary" id="shuffle">🔀 Shuffle: Off</button><button class="secondary" id="repeat">🔁 Repeat: Off</button>
+  </div>
+  <label class="hint" for="volume">VOLUME</label><input id="volume" type="range" min="0" max="1" step=".01" value=".85">
+</section>
+<section class="card">
+  <p class="sectiontitle">SOUND STUDIO</p>
+  <div class="eqgrid">
+    <label class="eqitem">BASS BOOST<input id="bass" type="range" min="0" max="15" value="0" step="1"></label>
+    <label class="eqitem">MID<input id="mid" type="range" min="-12" max="12" value="0" step="1"></label>
+    <label class="eqitem">TREBLE<input id="treble" type="range" min="-12" max="12" value="0" step="1"></label>
+  </div>
+  <div class="row"><button class="secondary" id="presetFlat">FLAT</button><button class="secondary" id="presetBass">BASS VIBE</button><button class="secondary" id="presetVocal">VOCAL</button></div>
+  <p class="hint">Sound controls apply after you press play. Use moderate bass boost to avoid distortion.</p>
+</section>
+<section class="card">
+  <p class="sectiontitle">MY MUSIC</p>
+  <label class="filebtn">＋ CHOOSE MUSIC FILES<input id="musicFiles" type="file" accept="audio/*" multiple></label>
+  <p class="hint">Choose songs stored on your phone. Keep this page open while listening for best results.</p>
+  <ul id="playlist"><li><span>No songs added yet</span></li></ul>
+</section>
+<section class="card">
+  <p class="sectiontitle">LYRICS</p>
+  <p class="hint">Search online lyrics for the current song, or open a .txt/.lrc lyrics file. Timed .lrc lyrics can follow the song.</p>
+  <div class="row" style="margin:8px 0"><button id="onlineLyrics">🌐 FIND ONLINE LYRICS</button><button id="findCover" class="secondary">🖼️ FIND ALBUM COVER</button></div>
+  <p id="onlineStatus" class="hint" aria-live="polite"></p>
+  <label class="filebtn">＋ OPEN LYRICS FILE<input id="lyricsFile" type="file" accept=".txt,.lrc,text/plain"></label>
+  <textarea id="lyricsInput" placeholder="Paste song lyrics here..."></textarea>
+  <div class="row" style="margin-top:8px"><button id="showLyrics">SHOW LYRICS</button><button class="secondary" id="clearLyrics">CLEAR</button></div>
+  <div class="card" style="margin-top:14px"><div id="lyricsDisplay">Lyrics will appear here.</div></div>
+</section>
+<section class="card">
+  <p class="sectiontitle">CHANGE YOUR THEME</p>
+  <label for="theme">Choose a style</label>
+  <select id="theme">
+    <option value="red">Red Luxury</option><option value="blue">Blue Neon</option><option value="purple">Purple Glow</option><option value="green">Green Matrix</option><option value="gold">Gold Luxury</option><option value="pink">Pink Neon</option>
+  </select>
+  <label for="customColor">Or choose your own accent color</label><input id="customColor" type="color" value="#ff1738" style="width:100%;height:46px;background:#111;border:1px solid #444;border-radius:10px;padding:5px">
+  <p class="hint">Your theme choice is saved on this device when browser storage is available.</p>
+</section>
+</main>
+<footer>MAVERICK MUSIC PLAYER · Enhanced browser edition · Online services require internet. Background playback depends on browser/phone settings.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const audio=$('audio');let tracks=[],idx=-1,shuffle=false,repeat=false,urls=[];
+function fmt(s){if(!isFinite(s))return '0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function loadTrack(i,autoplay=false){if(!tracks.length)return;idx=(i+tracks.length)%tracks.length;audio.src=tracks[idx].url;$('songTitle').textContent=tracks[idx].name;$('songArtist').textContent='Local audio file';$('cover').style.backgroundImage='';$('cover').textContent='M';$('cover').style.backgroundSize='cover';renderList();setMediaInfo();if(autoplay)audio.play().catch(()=>{});searchCover();}
+function renderList(){let ul=$('playlist');ul.innerHTML='';if(!tracks.length){ul.innerHTML='<li><span>No songs added yet</span></li>';return;}tracks.forEach((t,i)=>{let li=document.createElement('li'),sp=document.createElement('span'),b=document.createElement('button');sp.textContent=(i===idx?'▶ ':'')+t.name;b.textContent='PLAY';b.className='secondary';b.onclick=()=>loadTrack(i,true);li.append(sp,b);ul.append(li)})}
+$('musicFiles').addEventListener('change',e=>{for(const f of e.target.files){tracks.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)});}if(idx<0&&tracks.length)loadTrack(0);else renderList();});
+$('play').onclick=()=>{if(!audio.src&&tracks.length)loadTrack(0);if(audio.paused)audio.play().catch(()=>{});else audio.pause()};
+$('prev').onclick=()=>loadTrack(idx-1,true);$('next').onclick=()=>{if(shuffle&&tracks.length>1){let n;do{n=Math.floor(Math.random()*tracks.length)}while(n===idx);loadTrack(n,true)}else loadTrack(idx+1,true)};
+$('shuffle').onclick=()=>{shuffle=!shuffle;$('shuffle').textContent='🔀 Shuffle: '+(shuffle?'On':'Off')};
+$('repeat').onclick=()=>{repeat=!repeat;audio.loop=repeat;$('repeat').textContent='🔁 Repeat: '+(repeat?'On':'Off')};
+$('volume').oninput=e=>audio.volume=Number(e.target.value);audio.volume=.85;
+audio.onplay=()=>{$('play').textContent='⏸ PAUSE'};audio.onpause=()=>{$('play').textContent='▶ PLAY'};
+audio.ontimeupdate=()=>{if(audio.duration){$('seek').value=audio.currentTime/audio.duration*1000;$('currentTime').textContent=fmt(audio.currentTime);$('duration').textContent=fmt(audio.duration)}};
+$('seek').oninput=e=>{if(audio.duration)audio.currentTime=Number(e.target.value)/1000*audio.duration};
+audio.onended=()=>{if(!repeat) {if(shuffle&&tracks.length>1)$('next').click();else if(idx<tracks.length-1)$('next').click()}};
+$('lyricsFile').onchange=async e=>{const f=e.target.files[0];if(f){$('lyricsInput').value=await f.text();$('showLyrics').click()}};
+let timedLyrics=[];function parseLyrics(txt){timedLyrics=[];const re=/\[(\d{2}):(\d{2}(?:\.\d+)?)\](.*)/g;let m;while((m=re.exec(txt))!==null)timedLyrics.push({t:Number(m[1])*60+Number(m[2]),line:m[3].trim()});timedLyrics.sort((a,b)=>a.t-b.t);return timedLyrics.length>0}
+$('showLyrics').onclick=()=>{const txt=$('lyricsInput').value.trim();if(parseLyrics(txt)){$('lyricsDisplay').textContent=timedLyrics.map(x=>x.line).join('\n')}else $('lyricsDisplay').textContent=txt||'No lyrics entered yet.'};
+audio.addEventListener('timeupdate',()=>{if(timedLyrics.length){let active=timedLyrics[0];for(const l of timedLyrics){if(l.t<=audio.currentTime)active=l;else break}$('lyricsDisplay').textContent=active.line||'♪'}});
+async function searchCover(){if(idx<0)return;const q=encodeURIComponent(tracks[idx].name.replace(/[-_]/g,' '));try{const r=await fetch('https://itunes.apple.com/search?term='+q+'&entity=song&limit=1');const d=await r.json();if(d.results&&d.results[0]&&d.results[0].artworkUrl100){const cover=d.results[0].artworkUrl100.replace('100x100bb','600x600bb');$('cover').textContent='';$('cover').style.backgroundImage='url(\"'+cover+'\")';$('cover').style.backgroundPosition='center';$('cover').style.backgroundSize='cover';$('songArtist').textContent=d.results[0].artistName;setMediaInfo(d.results[0].artistName,cover)}}catch(e){}}
+async function searchLyrics(){if(idx<0){$('onlineStatus').textContent='Choose a song first.';return}const name=tracks[idx].name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');$('onlineStatus').textContent='Searching for lyrics…';try{let r=await fetch('https://lrclib.net/api/search?q='+encodeURIComponent(name));let d=await r.json();if(!d.length){$('onlineStatus').textContent='No online lyrics found for this song.';return}let best=d.find(x=>x.syncedLyrics)||d.find(x=>x.plainLyrics)||d[0];const textLyrics=best.syncedLyrics||best.plainLyrics;if(!textLyrics){$('onlineStatus').textContent='Lyrics were not available.';return}$('lyricsInput').value=textLyrics;parseLyrics(textLyrics);$('lyricsDisplay').textContent=timedLyrics.length?timedLyrics[0].line:textLyrics;$('onlineStatus').textContent=(best.syncedLyrics?'Synchronized lyrics loaded.':'Lyrics loaded (not timed).')+' Check that they match your song.'}catch(e){$('onlineStatus').textContent='Could not connect. Check your internet and try again.'}}
+$('onlineLyrics').onclick=searchLyrics;$('findCover').onclick=searchCover;
+// Audio effects and animated visualizer (supported by the browser when Web Audio is available)
+let audioCtx=null, analyser=null, bassFilter=null, midFilter=null, trebleFilter=null, sourceNode=null, rafId=0;
+function initAudioGraph(){
+ if(audioCtx)return true;
+ try{
+  const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return false;
+  audioCtx=new Ctx();sourceNode=audioCtx.createMediaElementSource(audio);
+  bassFilter=audioCtx.createBiquadFilter();bassFilter.type='lowshelf';bassFilter.frequency.value=150;
+  midFilter=audioCtx.createBiquadFilter();midFilter.type='peaking';midFilter.frequency.value=1000;midFilter.Q.value=0.8;
+  trebleFilter=audioCtx.createBiquadFilter();trebleFilter.type='highshelf';trebleFilter.frequency.value=4500;
+  analyser=audioCtx.createAnalyser();analyser.fftSize=128;
+  sourceNode.connect(bassFilter);bassFilter.connect(midFilter);midFilter.connect(trebleFilter);trebleFilter.connect(analyser);analyser.connect(audioCtx.destination);
+  drawVisualizer();return true;
+ }catch(e){return false}
+}
+function updateEQ(){if(!initAudioGraph())return;bassFilter.gain.value=Number($('bass').value);midFilter.gain.value=Number($('mid').value);trebleFilter.gain.value=Number($('treble').value)}
+['bass','mid','treble'].forEach(id=>$(id).addEventListener('input',updateEQ));
+$('presetFlat').onclick=()=>{ $('bass').value=0;$('mid').value=0;$('treble').value=0;updateEQ() };
+$('presetBass').onclick=()=>{ $('bass').value=10;$('mid').value=-2;$('treble').value=3;updateEQ() };
+$('presetVocal').onclick=()=>{ $('bass').value=1;$('mid').value=4;$('treble').value=2;updateEQ() };
+function drawVisualizer(){const c=$('visualizer'),ctx=c.getContext('2d');if(!ctx)return;const draw=()=>{rafId=requestAnimationFrame(draw);const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const bars=32,gap=3,bw=(w-gap*(bars-1))/bars;let data;if(analyser){data=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(data)}for(let i=0;i<bars;i++){let v=data?data[Math.floor(i*data.length/bars)]/255:(.12+Math.abs(Math.sin(Date.now()/500+i*.5))*.08);let bh=Math.max(3,v*(h-8));ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#ff1738';ctx.globalAlpha=.55+v*.45;ctx.fillRect(i*(bw+gap),h-bh,bw,bh);ctx.globalAlpha=1}};if(!rafId)draw()}
+$('play').addEventListener('click',()=>{if(!audio.paused){/* pause handled by main player */}else{initAudioGraph();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{})}});
+function setMediaInfo(artist='Local audio file',artwork=''){if('mediaSession'in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:idx>=0?tracks[idx].name:'MAVERICK MUSIC PLAYER',artist,album:'MAVERICK MUSIC PLAYER',artwork:artwork?[{src:artwork,sizes:'600x600',type:'image/jpeg'}]:[]});try{navigator.mediaSession.setActionHandler('play',()=>audio.play());navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('previoustrack',()=>loadTrack(idx-1,true));navigator.mediaSession.setActionHandler('nexttrack',()=>$('next').click());navigator.mediaSession.setActionHandler('seekto',d=>{if(d.seekTime!=null)audio.currentTime=d.seekTime})}catch(e){}}}
+audio.onplay=()=>{$('play').textContent='⏸ PAUSE';initAudioGraph();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});updateEQ();setMediaInfo()};
+$('clearLyrics').onclick=()=>{$('lyricsInput').value='';$('lyricsDisplay').textContent='Lyrics will appear here.'};
+const themes={red:'#ff1738',blue:'#00a8ff',purple:'#bd5cff',green:'#39ff88',gold:'#e8bd54',pink:'#ff4fb3'};
+function setAccent(c){document.documentElement.style.setProperty('--accent',c);$('customColor').value=/^#[0-9a-f]{6}$/i.test(c)?c:'#ff1738';try{localStorage.setItem('maverickAccent',c)}catch(e){}}
+$('theme').onchange=()=>setAccent(themes[$('theme').value]);$('customColor').oninput=e=>setAccent(e.target.value);
+try{const saved=localStorage.getItem('maverickAccent');if(saved){setAccent(saved);let found=Object.keys(themes).find(k=>themes[k]===saved);if(found)$('theme').value=found}}catch(e){}
+</script>
+<script>if("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){navigator.serviceWorker.register("./sw.js").catch(()=>{});}</script>
+</body>
+</html>
